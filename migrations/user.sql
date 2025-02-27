@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS user (
+	uid TEXT PRIMARY KEY,
+	name TEXT NOT NULL,
+	surname TEXT NOT NULL,
+	password TEXT NOT NULL,
+	is_admin TEXT NOT NULL
+);

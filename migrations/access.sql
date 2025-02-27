@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS access (
+	uid TEXT PRIMARY KEY,
+    access_token TEXT NOT NULL
+);

@@ -87,24 +87,29 @@ class UserController implements Controller {
           res.send("Please provide an id");
           return;
       }
+      if (req.body.access_token === undefined) {
+        res.send("Please provide an access token");
+        return;
+      }
 
-      // !!! Attention: Pas de vérification de la provenance de la requête HTTP !!!
+      // Vérification de la provenance de la requête HTTP !!!
       let sql: string = `SELECT * FROM access WHERE uid = ?`;
       let params = [req.params.id];
       let access_token: String = "";
+      // Récupération du token 
       await UserController.run_query(sql, params).then((rows: any) =>
         rows.forEach((row: any) => {
-          user.push(row.access_token);
+          access_token = row.access_token;
         })
       );
-
-      if (req.params.access_token != access_token) {
+      // Compare le token transmis avec le token connu 
+      if (req.body.access_token != access_token) {
         res.send("Unauthorized access");
         return;
       }
       
       // Création de la requête SQL 
-      sql = `SELECT * FROM user WHERE uuid = ?`;
+      sql = `SELECT * FROM user WHERE uid = ?`;
       params = [req.params.id];
 
       // Récupération de l'utilisateur en fonction de la requête

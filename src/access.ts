@@ -81,7 +81,7 @@ class AccessController implements Controller {
         console.log(
           "[INFO][POST] insert on " + AccessController.path,
         );
-        res.send("Access added successfully");
+        res.send(JSON.stringify(access_token));
     }
 }
 

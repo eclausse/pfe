@@ -6,3 +6,4 @@ touch vuln.db
 cat migrations/user.sql | sqlite3 vuln.db
 cat migrations/supplier.sql | sqlite3 vuln.db
 cat migrations/access.sql | sqlite3 vuln.db
+cat migrations/file.sql | sqlite3 vuln.db

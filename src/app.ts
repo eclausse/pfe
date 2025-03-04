@@ -39,7 +39,7 @@ class App {
 
   listen() {
     this.app.listen(this.port, () => {
-      console.log(`[INFO] Frogy Api started on port ${this.port}`);
+      console.log(`[INFO] Vulnerable API started on port ${this.port}`);
 
       this.app.use("/", express.static("../front/dist/"));
       this.app.get("*", function (_req: Request, res: Response) {

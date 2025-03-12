@@ -3,6 +3,7 @@ import { Request, Response, Router } from "express";
 import { Database } from "sqlite3";
 import { log } from "console";
 import { createHash, randomUUID, UUID } from "crypto";
+import bcrypt from "bcrypt";
 
 class UserController implements Controller {
   static path = "/user";
@@ -129,7 +130,7 @@ class UserController implements Controller {
     async post(req: Request, res: Response) {
         //Hachage du mot de passe
         const password = req.body.password;
-        const hashedPassword = createHash('sha256').update(password).digest('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = new UserEntry(
             randomUUID(),

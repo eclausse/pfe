@@ -4,6 +4,7 @@ import { Database } from "sqlite3";
 import { log } from "console";
 import { createHash, randomUUID, UUID } from "crypto";
 import UserController from "./user";
+import bcrypt from "bcrypt";
 
 class AccessController implements Controller {
   static path = "/access";
@@ -56,10 +57,10 @@ class AccessController implements Controller {
             res.send("Please provide a password");
             return;
         }
-
+        const hash = await bcrypt.hash(password, 10);
         // Get hash of password
-        const hash = createHash("sha256").update(password).digest("hex");
-        console.log(hash);
+        //const hash = createHash("sha256").update(password).digest("hex");
+        //console.log(hash);
         // Check if user exists
         let sql = `SELECT * FROM user WHERE uid = ? AND password = ?`;
         let params = [uid, hash];

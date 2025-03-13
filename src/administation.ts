@@ -31,10 +31,13 @@ class AdminController implements Controller {
   }
 
   async get(req: Request, res: Response) {
-    const backendToken = req.headers['x-backend-token'];
-    console.log(backendToken + " " + process.env.BACKEND_TOKEN);
-
-    if (backendToken != process.env.BACKEND_TOKEN) {
+    try {
+      const backendToken = req.headers['x-backend-token'];
+      console.log(backendToken + " " + process.env.BACKEND_TOKEN);
+      if (backendToken != process.env.BACKEND_TOKEN) {
+        res.status(403).send("Forbidden");
+      }
+    } catch (e) {
       res.status(403).send("Forbidden");
     }
 

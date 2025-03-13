@@ -13,7 +13,9 @@ class AccessController implements Controller {
   constructor() {
     this.router = Router();
     this.router.get(AccessController.path, this.get); 
+
     this.router.post(AccessController.path, this.login);
+    this.router.post(AccessController.path, this.login_fix);
   }
 
   static run_query(query: string, params: any = []) {
@@ -43,8 +45,45 @@ class AccessController implements Controller {
       // Envoi de la réponse
       res.send(JSON.stringify(access));  
   }
-  
-    async login(req: Request, res: Response) {
+
+  async login(req: Request, res: Response) {
+    const uid = req.body.uid;
+    const password = req.body.password;
+
+    if (uid === undefined) {
+        res.send("Please provide an uid");
+        return;
+    }
+    if (password === undefined) {
+        res.send("Please provide a password");
+        return;
+    }
+
+    // Check if user exists
+    let sql = `SELECT * FROM user WHERE uid = ? AND password = ?`;
+    let params = [uid, password];
+    let user: String[] = [];
+    // Passage de la requête et des paramètres à la fonction run_query
+    await UserController.run_query(sql, params).then((rows: any) =>
+        rows.forEach((row: any) => {
+          user.push(row.uid);
+        })
+    );
+    if (user.length === 0) {
+        res.send("User not found");
+        return;
+    }
+
+    const access_token: string = randomUUID().toString();
+    sql = `INSERT INTO access (uid, access_token) VALUES ('${uid}', '${access_token}')`;
+    await AccessController.run_query(sql);
+    console.log(
+      "[INFO][POST] insert on " + AccessController.path,
+    );
+    res.send(JSON.stringify(access_token));
+  }
+
+    async login_fix(req: Request, res: Response) {
         const uid = req.body.uid;
         const password = req.body.password;
 

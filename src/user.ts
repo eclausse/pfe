@@ -8,14 +8,35 @@ class UserController implements Controller {
   static path = "/user";
   router: Router;
   db_name = "vuln.db";
+  static current_id = 0;
 
   constructor() {
     this.router = Router();
+
+    /* DEBUG */
+    this.router.get(UserController.path + "/debug", this.get_all);
+
+    /* SQLi vulnerability */
     this.router.get(UserController.path, this.get); /* Vulnérabilité SQLi */
     this.router.get(UserController.path + "/fix", this.get_with_parameterized_query); /* Pas de vulnérabilité SQLi*/
-    this.router.get(UserController.path + "/:id", this.get_by_id); /* Pas de vulnérabilité SQLi*/
+
+    /* BOLA Vulnerability */
+    this.router.get(UserController.path + "/:id", this.get_by_id);
+    this.router.get(UserController.path + "/fix/:id", this.get_by_id_fix);
+    this.router.post(UserController.path + "/fix-id", this.post_bola_fix);
+
+    /* Vulnerable POST */
     this.router.post(UserController.path, this.post);
+
+    /* Fix cryptographic failure */
+    this.router.post(UserController.path + "/fix-password", this.post_hash_fix);
+
     this.router.put(UserController.path + "/:id", this.update_by_id);
+  }
+
+  static get_next_id() {
+    this.current_id++;
+    return (this.current_id - 1)
   }
 
   static run_query(query: string, params: any = []) {
@@ -29,6 +50,24 @@ class UserController implements Controller {
       })
     );
   }
+
+  async get_all(req: Request, res: Response) {
+    // Création de la requête SQL en concaténant le paramètre name
+    const sql: string = `SELECT rowid, * FROM user`; // SQL Injection possible
+    // Récupération des utilisateurs en fonction de la requête
+    let users: String[][] = [];
+    await UserController.run_query(sql).then((rows: any) =>
+        rows.forEach((row: any) => {
+          users.push([row.uid, row.name, row.surname, row.password, row.is_admin]);
+        })
+    );
+
+    console.log(
+    "[INFO][GET] get alls on " + UserController.path,
+    );
+    // Envoi de la réponse
+    res.send(JSON.stringify(users));  
+}
 
     async get(req: Request, res: Response) {
         // Vérification de la présence du paramètre name 
@@ -87,6 +126,30 @@ class UserController implements Controller {
           res.send("Please provide an id");
           return;
       }
+      
+      // Vérification de la provenance de la requête HTTP !!!
+      let sql: string = `SELECT * FROM user WHERE uid = ?`;
+      let params = [req.params.id];
+      // Récupération de l'utilisateur en fonction de la requête
+      let user: String[] = [];
+      // Passage de la requête et des paramètres à la fonction run_query
+      await UserController.run_query(sql, params).then((rows: any) =>
+          rows.forEach((row: any) => {
+            user.push(row.uid, row.name, row.surname, row.password, row.is_admin);
+          })
+      );
+
+      console.log("[INFO][GET] get id "+   req.params.id + " on " + UserController.path + " " +  user.toString());
+      // Envoi de la réponse
+      res.send(JSON.stringify(user));
+    }
+
+    async get_by_id_fix(req: Request, res: Response) {
+      // Vérification de la présence du paramètre id 
+      if (req.params.id === undefined) {
+          res.send("Please provide an id");
+          return;
+      }
       if (req.body.access_token === undefined) {
         res.send("Please provide an access token");
         return;
@@ -125,8 +188,34 @@ class UserController implements Controller {
       // Envoi de la réponse
       res.send(JSON.stringify(user));
     }
-  
+
     async post(req: Request, res: Response) {
+      const sql = `INSERT INTO user (uid, name, surname, password, is_admin) VALUES ('${UserController.get_next_id()}', '${req.body.name}', '${req.body.surname}', '${req.body.password}', ${req.body.is_admin})`;
+      await UserController.run_query(sql);
+      console.log(
+      "[INFO][POST] insert on " + UserController.path,
+      );
+      res.send("User added successfully");
+  }
+
+    async post_bola_fix(req: Request, res: Response) {
+      const user = new UserEntry(
+          randomUUID(),
+          req.body.name,
+          req.body.surname,
+          req.body.password,
+          req.body.is_admin
+      );
+      console.log("ID = " + user.id);
+      const sql = `INSERT INTO user (uid, name, surname, password, is_admin) VALUES ('${user.id}', '${user.name}', '${user.surname}', '${user.password}', ${user.is_admin})`;
+      await UserController.run_query(sql);
+      console.log(
+      "[INFO][POST] insert on " + UserController.path,
+      );
+      res.send("User added successfully");
+  }
+  
+    async post_hash_fix(req: Request, res: Response) {
         //Hachage du mot de passe
         const password = req.body.password;
         const hashedPassword = createHash('sha256').update(password).digest('hex');

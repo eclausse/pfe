@@ -79,8 +79,8 @@ class FileController implements Controller {
           return res.status(400).send("URL is required");
         }
 
-        const uuid = req.body.uuid;
-        if (!uuid) {
+        const uid = req.body.uid;
+        if (!uid) {
           return res.status(400).send("UUID is required");
         }
 
@@ -92,7 +92,7 @@ class FileController implements Controller {
                 'x-backend-token': `${process.env.BACKEND_TOKEN}`
                 }
             });
-            const sql: string = `INSERT INTO file_data (uuid, url, content) VALUES ("${uuid}", "${url}", "${response.status}")`;
+            const sql: string = `INSERT INTO file_data (uuid, url, content) VALUES ("${uid}", "${url}", "${response.status}")`;
             await FileController.run_query(sql);
             console.log(
               "[INFO][POST] insert on " + FileController.path,
@@ -109,8 +109,8 @@ class FileController implements Controller {
         return res.status(400).send("URL is required");
       }
 
-      const uuid = req.body.uuid;
-      if (!uuid) {
+      const uid = req.body.uid;
+      if (!uid) {
         return res.status(400).send("UUID is required");
       }
 
@@ -145,7 +145,7 @@ class FileController implements Controller {
               maxRedirects: 0, // Disable redirection
           });
 
-          const sql: string = `INSERT INTO file_data (uuid, url, content) VALUES ("${uuid}", "${url}", "${response.status}")`;
+          const sql: string = `INSERT INTO file_data (uuid, url, content) VALUES ("${uid}", "${url}", "${response.status}")`;
           await FileController.run_query(sql);
           console.log("[INFO][POST] insert on " + FileController.path + "/fix");
 

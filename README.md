@@ -23,5 +23,5 @@ In a new terminal
 
 # Author
 
-Evan Clausse
+Evan Clausse  
 Dongwon Lee

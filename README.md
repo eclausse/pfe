@@ -1,5 +1,10 @@
 # PFE
 
+# Dependency
+
+- npm
+- sqlite3
+
 # Install
 
 ```bash
